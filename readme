@@ -1,0 +1,14 @@
+print.h
+-------
+
+Generic print()/fprint() functions
+inspired by high-level languages.
+
+All code is in single header.
+
+[ INSTALLATION ]
+  # cp print.h /usr/include
+
+[ NOTE ]
+  May not work on 32-bits systems,
+  also not tested on Microsoft C Compiler.
