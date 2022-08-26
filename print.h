@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -171,7 +173,7 @@
 	 _ARG_T(_1),_ARG_T(_2),_ARG_T(_3),_ARG_T(_4),_ARG_T(_5),_ARG_T(_6),_ARG_T(_7),_ARG_T(_8),_ARG_T(_9),_ARG_T(_10),_ARG_T(_11),_ARG_T(_12),_ARG_T(_13),_ARG_T(_14),_ARG_T(_15),_ARG_T(_16),_ARG_T(_17),_ARG_T(_18),_ARG_T(_19),_ARG_T(_20),_ARG_T(_21),_ARG_T(_22),_ARG_T(_23),_ARG_T(_24),_ARG_T(_25),_ARG_T(_26),_ARG_T(_27),_ARG_T(_28),_ARG_T(_29),_ARG_T(_30),_ARG_T(_31),_ARG_T(_32),_ARG_T(_33),_ARG_T(_34),_ARG_T(_35),_ARG_T(_36),_ARG_T(_37),_ARG_T(_38),_ARG_T(_39),_ARG_T(_40),_ARG_T(_41),_ARG_T(_42),_ARG_T(_43),_ARG_T(_44),_ARG_T(_45),_ARG_T(_46),_ARG_T(_47),_ARG_T(_48),_ARG_T(_49),_ARG_T(_50),_ARG_T(_51),_ARG_T(_52),_ARG_T(_53),_ARG_T(_54),_ARG_T(_55),_ARG_T(_56),_ARG_T(_57),_ARG_T(_58),_ARG_T(_59),_ARG_T(_60),_ARG_T(_61),_ARG_T(_62),_ARG_T(_63)
 #define __EVAL_(_,...) _(__VA_ARGS__)
 
-static void __print(int fd, int c, ...)
+static void __print(FILE *fp, int c, ...)
 {
 	int types[64], i;
 	char buf[12];
@@ -187,8 +189,8 @@ static void __print(int fd, int c, ...)
 				snprintf(buf, sizeof(buf), "%f", va_arg(args, double));
 				break;
 			case 2:
-				strcpy(buf, (char[]){ (char)va_arg(args, int), 0 });
-				break;
+				fputs((char[]){ (char)va_arg(args, int), 0 }, fp);
+				continue;
 			case 3:
 				snprintf(buf, sizeof(buf), "%i", va_arg(args, int));
 				break;
@@ -202,27 +204,35 @@ static void __print(int fd, int c, ...)
 				snprintf(buf, sizeof(buf), "%lu", va_arg(args, unsigned long));
 				break;
 			case 7:
-				snprintf(buf, sizeof(buf), "%s", va_arg(args, char*));
-				break;
+				fputs(va_arg(args, char*), fp);
+				continue;
 			case 8:
 				snprintf(buf, sizeof(buf), "%p", va_arg(args, void*));
 				break;
 		}
 
-		write(fd, &buf, strlen(buf) * sizeof(char));
 
-		if (i != c - 1)
-			write(fd, " ", sizeof(char));
+		fputs(buf, fp);
+
+		if (i < c- 1)
+			fputs(" ", fp);
 	}
 
 	va_end(args);
-	write(fd, "\n", sizeof(char));
 }
 
+/* Write output to stdout */
 #define print(...) \
-	__print(STDOUT_FILENO, _NARG(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _NARG(__VA_ARGS__)), \
+	__print(stdout, _NARG(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _NARG(__VA_ARGS__)), \
 		__VA_ARGS__), __VA_ARGS__)
 
-#define fprint(fd,...) \
-	__print(fd, _NARG(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _NARG(__VA_ARGS__)), \
+#define println(...) \
+	print(__VA_ARGS__); puts("")
+
+/* Write output to STREAM */
+#define fprint(stream,...) \
+	__print(stream, _NARG(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _NARG(__VA_ARGS__)), \
 		__VA_ARGS__), __VA_ARGS__)
+
+#define fprintln(stream,...) \
+	fprint(stream,__VA_ARGS__); fputs(stream, "")
