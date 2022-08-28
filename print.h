@@ -235,4 +235,4 @@ static void __print(FILE *fp, int c, ...)
 		__VA_ARGS__), __VA_ARGS__)
 
 #define fprintln(stream,...) \
-	fprint(stream,__VA_ARGS__); fputs(stream, "")
+	fprint(stream,__VA_ARGS__); fputs("", stream)
