@@ -84,7 +84,7 @@ static void __print(int m, int c, ...)
 	};
 
 	short types[12], i;
-	char buf[12], *s;
+	char buf[4096], *s;
 	__SIZE_TYPE__ l;
 	FILE* fp = NULL;
 
