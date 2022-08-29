@@ -149,7 +149,6 @@ static void __print(int m, int c, ...)
 	if (m & println)
 		fputs("\n", stdout);
 
-	if (fp) fclose(fp);
 	__builtin_va_end(ap);
 }
 
