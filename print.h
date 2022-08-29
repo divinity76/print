@@ -80,12 +80,11 @@ static void __print(int m, int c, ...)
 		print = 1 << 0,
 		println = 1 << 1,
 		fprint = 1 << 2,
-		sprint = 1 << 3,
-		snprint = 1 << 4
+		snprint = 1 << 3
 	};
 
 	short types[12], i;
-	char buf[4096], *s;
+	char buf[4096] = {0}, *s;
 	__SIZE_TYPE__ l;
 	FILE* fp = NULL;
 
@@ -94,10 +93,9 @@ static void __print(int m, int c, ...)
 
 	if (m & fprint)
 		fp = __builtin_va_arg(ap, FILE*);
-	else if (m & sprint)
-		s = __builtin_va_arg(ap, char*);
 	else if (m & snprint) {
 		s = __builtin_va_arg(ap, char*);
+		memset(s, 0, strlen(s) * sizeof(s));
 		l = __builtin_va_arg(ap, __SIZE_TYPE__);
 	}
 
@@ -107,28 +105,28 @@ static void __print(int m, int c, ...)
 	for (i = 0; i < c; i++) {
 		switch (types[i]) {
 			case 1:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%f", __builtin_va_arg(ap, double));
+				snprintf(buf, sizeof(buf), "%f", __builtin_va_arg(ap, double));
 				break;
 			case 2:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%c", __builtin_va_arg(ap, int));
+				snprintf(buf, sizeof(buf), "%c", __builtin_va_arg(ap, int));
 				break;
 			case 3:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%i", __builtin_va_arg(ap, int));
+				snprintf(buf, sizeof(buf), "%i", __builtin_va_arg(ap, int));
 				break;
 			case 4:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%u", __builtin_va_arg(ap, unsigned));
+				snprintf(buf, sizeof(buf), "%u", __builtin_va_arg(ap, unsigned));
 				break;
 			case 5:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%li", __builtin_va_arg(ap, long));
+				snprintf(buf, sizeof(buf), "%li", __builtin_va_arg(ap, long));
 				break;
 			case 6:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%lu", __builtin_va_arg(ap, unsigned long));
+				snprintf(buf, sizeof(buf), "%lu", __builtin_va_arg(ap, unsigned long));
 				break;
 			case 7:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%s", __builtin_va_arg(ap, char*));
+				snprintf(buf, sizeof(buf), "%s", __builtin_va_arg(ap, char*));
 				break;
 			case 8:
-				snprintf(buf + ((m & snprint || m & sprint) ? strlen(buf) : 0), sizeof(buf), "%p", __builtin_va_arg(ap, void*));
+				snprintf(buf, sizeof(buf), "%p", __builtin_va_arg(ap, void*));
 				break;
 		}
 
@@ -140,10 +138,8 @@ static void __print(int m, int c, ...)
 			case fprint:
 				fputs(buf, fp);
 				break;
-			case sprint:
-				sprintf(s, "%s", buf);
 			case snprint:
-				snprintf(s, l, "%s", buf);
+				snprintf(s + strlen(s), l, "%s", buf);
 		}
 	}
 
@@ -161,7 +157,4 @@ static void __print(int m, int c, ...)
 /* Write output to STREAM */
 #define fprint(__stream, ...) __print(1 << 2, _ARG_C(__VA_ARGS__), __stream, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
 
-/* Write output to string */
-#define sprint(__s, ...) __print(1 << 3, _ARG_C(__VA_ARGS__), __s, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
-
-#define snprint(__s, __maxlen, ...) __print(1 << 4, _ARG_C(__VA_ARGS__), __s, __maxlen, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
+#define snprint(__s, __maxlen, ...) __print(1 << 3, _ARG_C(__VA_ARGS__), __s, __maxlen, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
