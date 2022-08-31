@@ -76,13 +76,6 @@
 
 static void __print(int m, int c, ...)
 {
-	enum {
-		print = 1 << 0,
-		println = 1 << 1,
-		fprint = 1 << 2,
-		snprint = 1 << 3
-	};
-
 	short types[12], i;
 	char buf[4096] = {0}, *s;
 	__SIZE_TYPE__ l;
@@ -91,9 +84,9 @@ static void __print(int m, int c, ...)
 	__builtin_va_list ap;
 	__builtin_va_start(ap, c);
 
-	if (m & fprint)
+	if (m == 2)
 		fp = __builtin_va_arg(ap, FILE*);
-	else if (m & snprint) {
+	else if (m == 3) {
 		s = __builtin_va_arg(ap, char*);
 		memset(s, 0, strlen(s) * sizeof(s));
 		l = __builtin_va_arg(ap, __SIZE_TYPE__);
@@ -131,30 +124,31 @@ static void __print(int m, int c, ...)
 		}
 
 		switch (m) {
-			case print:
-			case println:
+			case 0:
+			case 1:
 				fputs(buf, stdout);
 				break;
-			case fprint:
+			case 2:
 				fputs(buf, fp);
 				break;
-			case snprint:
+			case 3:
 				snprintf(s + strlen(s), l, "%s", buf);
 		}
 	}
 
-	if (m & println)
+	if (m == 1)
 		fputs("\n", stdout);
 
 	__builtin_va_end(ap);
 }
 
 /* Write output to stdout */
-#define print(...) __print(1 << 0, _ARG_C(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
+#define print(...) __print(0, _ARG_C(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
 
-#define println(...) __print(1 << 1, _ARG_C(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
+#define println(...) __print(1, _ARG_C(__VA_ARGS__), __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
 
-/* Write output to STREAM */
-#define fprint(__stream, ...) __print(1 << 2, _ARG_C(__VA_ARGS__), __stream, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
+/* Write output to stream */
+#define fprint(__stream, ...) __print(2, _ARG_C(__VA_ARGS__), __stream, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
 
-#define snprint(__s, __maxlen, ...) __print(1 << 3, _ARG_C(__VA_ARGS__), __s, __maxlen, __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
+/* Write output to str */
+#define sprint(__s, __maxlen, ...) __print(3, _ARG_C(__VA_ARGS__), __s, sizeof(__s), __EVAL_(__PASTE(__EVAL, _ARG_C(__VA_ARGS__)), __VA_ARGS__), __VA_ARGS__)
