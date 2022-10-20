@@ -1,14 +1,20 @@
 print.h
 -------
 
-Generic print()/fprint() functions
+Generic print()/fprint()/sprint() functions
 inspired by high-level languages.
 
 All code is in single header.
 
-[ INSTALLATION ]
-  # cp print.h /usr/include
+[ EXAMPLE ]
+	print("float: ", 1.5F);
 
-[ NOTE ]
-  May not work on 32-bits systems,
-  also not tested on Microsoft C Compiler.
+	char *value = "VALUE";
+	fprint(fp, "VARIABLE=", value);
+
+	char buf[12];
+	sprint(buf, sizeof(buf), "Hello world!");
+
+
+[ INSTALLATION ]
+	# cp print.h /usr/include
